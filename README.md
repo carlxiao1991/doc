@@ -12,7 +12,6 @@ $ npm install
 
 ### II. Online Operation
 
-
 To build only the Chinese manual:
 
 ```shell
