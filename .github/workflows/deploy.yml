@@ -1,7 +1,6 @@
 name: Deploy Docusaurus to GitHub Pages
 
 on:
-  # 当推送到主分支时触发部署
   push:
     branches: [main]
 
@@ -11,23 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # 拉取所有历史记录，确保版本号正确
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.19.1  # Docusaurus 推荐的 Node 版本
+          node-version: 18.x
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install  # 替换为 npm install 避免依赖锁文件问题
 
       - name: Build website
-        run: npm run build  # 构建静态文件
+        run: npm run build
 
-      # 部署到 gh-pages 分支
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}  # 自动生成的 Token
-          publish_dir: ./build  # Docusaurus 构建输出目录
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
