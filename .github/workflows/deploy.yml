@@ -15,11 +15,24 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 18.19.1
           cache: 'npm'
 
+      - name: Check for lock file
+        id: check_lockfile
+        run: |
+          if [ -f "package-lock.json" ] || [ -f "yarn.lock" ]; then
+            echo "lockfile_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "lockfile_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate lock file if missing
+        if: steps.check_lockfile.outputs.lockfile_exists == 'false'
+        run: npm install --package-lock-only
+
       - name: Install dependencies
-        run: npm install  # 替换为 npm install 避免依赖锁文件问题
+        run: npm install
 
       - name: Build website
         run: npm run build
