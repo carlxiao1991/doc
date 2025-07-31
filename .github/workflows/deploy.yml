@@ -5,31 +5,18 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.19.1
+          node-version: 18.x
           cache: 'npm'
-
-      - name: Check for lock file
-        id: check_lockfile
-        run: |
-          if [ -f "package-lock.json" ] || [ -f "yarn.lock" ]; then
-            echo "lockfile_exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "lockfile_exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate lock file if missing
-        if: steps.check_lockfile.outputs.lockfile_exists == 'false'
-        run: npm install --package-lock-only
 
       - name: Install dependencies
         run: npm install
@@ -37,8 +24,21 @@ jobs:
       - name: Build website
         run: npm run build
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload build artifacts
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
+          path: './build'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
